@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Scoreboard Control Panel</title>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body class="control-body">
+    <div class="control-container">
+        <h1>Scoreboard Control Panel</h1>
+
+        <section class="control-section">
+            <h2>Race Info</h2>
+            <form id="header-form">
+                <div class="field">
+                    <label for="race-title">Race title</label>
+                    <input id="race-title" name="race_title" type="text" value="{{ scoreboard.race_title }}" />
+                </div>
+                <div class="field">
+                    <label for="heat">Heat</label>
+                    <input id="heat" name="heat" type="text" value="{{ scoreboard.heat }}" />
+                </div>
+                <div class="field">
+                    <label for="event-text">Event text</label>
+                    <input id="event-text" name="event_text" type="text" value="{{ scoreboard.event_text or '' }}" />
+                </div>
+                <div class="field">
+                    <div>
+                        <button type="submit">Update header</button>
+                        <button type="button" id="sort-lane">Sort by lane</button>
+                        <button type="button" id="sort-rank">Sort by rank</button>
+                        <span id="header-status" class="status"></span>
+                        <span id="sort-status" class="status"></span>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <section class="control-section">
+            <h2>Pool Info</h2>
+            <form id="pool-form" onsubmit="return false;">
+                <div class="field">
+                    <label for="lane-count">Number of lanes</label>
+                    <select id="lane-count" name="lane_count">
+                        {% for n in range(1, 11) %}
+                        <option value="{{ n }}"{% if (pool.lane_count or 8) == n %} selected{% endif %}>{{ n }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="first-lane">First lane number</label>
+                    <select id="first-lane" name="first_lane">
+                        {% for n in range(0, 11) %}
+                        <option value="{{ n }}"{% if (pool.first_lane or 1) == n %} selected{% endif %}>{{ n }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="pool-meters">Lap length (meters) (50 meter for a 25 meter pool with one touchpad)</label>
+                    <input
+                        id="pool-meters"
+                        name="lap_meters"
+                        type="text"
+                        inputmode="decimal"
+                        placeholder="e.g. 50 or 100"
+                        value="{{ pool.lap_meters or 50 }}"
+                    />
+                </div>
+                <div class="field">
+                    <button type="button" id="pool-update">Update pool</button>
+                    <span id="pool-status" class="status"></span>
+                </div>
+            </form>
+        </section>
+
+        <section class="control-section">
+            <h2>Appearance</h2>
+            <form id="settings-form">
+                <div class="field">
+                    <label for="background-color">Background color</label>
+                    <input id="background-color" name="background_color" type="color" value="{{ scoreboard.settings.background_color }}" />
+                </div>
+                <div class="field">
+                    <label for="font-color">Font color</label>
+                    <input id="font-color" name="font_color" type="color" value="{{ scoreboard.settings.font_color }}" />
+                </div>
+                <div class="field">
+                    <label for="font-scale">Font scaling</label>
+                    <div>
+                        <input
+                            id="font-scale"
+                            name="font_scale"
+                            type="range"
+                            min="50"
+                            max="150"
+                            step="5"
+                            value="{{ scoreboard.settings.font_scale or 100 }}"
+                        />
+                        <span id="font-scale-value" class="status">{{ scoreboard.settings.font_scale or 100 }}%</span>
+                    </div>
+                </div>
+                <button type="submit">Update colors</button>
+                <span id="settings-status" class="status"></span>
+            </form>
+        </section>
+
+        <section class="control-section">
+            <h2>Heat Timer</h2>
+            <div class="field">
+                <div>
+                    <button type="button" id="timer-start">Start timer</button>
+                    <button type="button" id="timer-stop">Stop timer</button>
+                    <button type="button" id="timer-reset">Reset timer</button>
+                    <span id="timer-status" class="status"></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="control-section note">
+            <p>
+                Lane results can be updated through the <code>/api/lanes</code> endpoint
+                by posting JSON from a separate timing or meet-management system.
+            </p>
+        </section>
+
+        <section class="control-section">
+            <h2>Timing system connection</h2>
+            <form id="timing-form">
+                <div class="field">
+                    <label for="lst-path">LST DH path (folder for .lst files)</label>
+                    <input
+                        id="lst-path"
+                        name="lst_path"
+                        type="text"
+                        placeholder="e.g. C:\\LST or /var/timing/lst"
+                        value="{{ timing.lst_path or '' }}"
+                    />
+                </div>
+                <div class="field">
+                    <label for="com-port">COM port</label>
+                    <input
+                        id="com-port"
+                        name="com_port"
+                        type="text"
+                        placeholder="e.g. COM3 or /dev/ttyUSB0"
+                        value="{{ timing.com_port or '' }}"
+                    />
+                </div>
+                <div class="field">
+                    <label for="com-settings">COM port settings</label>
+                    <input
+                        id="com-settings"
+                        name="com_settings"
+                        type="text"
+                        placeholder="9600,7,n,1"
+                        value="{{ timing.com_settings or '9600,7,n,1' }}"
+                    />
+                </div>
+                <div class="field">
+                    <label for="debug-path">Serial debug capture file</label>
+                    <input
+                        id="debug-path"
+                        name="debug_path"
+                        type="text"
+                        placeholder="e.g. /var/log/scoreboard/serial.log"
+                        value="{{ timing.debug_path or '' }}"
+                    />
+                </div>
+                <div class="field">
+                    <label for="hold-results-time">Hold results time</label>
+                    <input
+                        id="hold-results-time"
+                        name="hold_results_time"
+                        type="text"
+                        inputmode="decimal"
+                        placeholder="e.g. 0.0"
+                        value="{{ timing.hold_results_time or 0.0 }}"
+                    />
+                </div>
+                <button type="submit">Save timing settings</button>
+                <span id="timing-status" class="status"></span>
+            </form>
+        </section>
+    </div>
+
+    <script src="/static/control_panel.js"></script>
+</body>
+</html>

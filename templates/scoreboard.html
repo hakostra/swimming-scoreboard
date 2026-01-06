@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Swimming Scoreboard</title>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body id="scoreboard-body">
+    <div class="scoreboard-container">
+        <header class="scoreboard-header">
+            <h1 id="race-title">{{ scoreboard.race_title }}</h1>
+            <div class="scoreboard-header-row">
+                <div class="scoreboard-clock" id="day-clock">00:00</div>
+                <div class="scoreboard-heat" id="heat-description">{{ scoreboard.heat }}</div>
+                <div class="scoreboard-timer" id="heat-timer">00:00.0</div>
+            </div>
+        </header>
+        <main>
+            <table class="scoreboard-table">
+                <colgroup>
+                    <col class="lane" />
+                    <col class="name" />
+                    <col class="split" />
+                    <col class="dist" />
+                    <col class="rank" />
+                    <col class="time" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>Ln</th>
+                        <th>Name</th>
+                        <th>Split</th>
+                        <th>Dist</th>
+                        <th>Pl</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody id="lanes-body">
+                {% for lane in scoreboard.lanes %}
+                    <tr>
+                        <td>{{ lane.lane }}</td>
+                        <td>{{ lane.name }}</td>
+                        <td>{{ lane.split }}</td>
+                        <td>{{ lane.dist }}</td>
+                        <td class="rank{% if lane.finished %} finished-metric{% endif %}">{{ lane.rank }}</td>
+                        <td class="time{% if lane.finished %} finished-metric{% endif %}">{{ lane.time }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <div class="scoreboard-header-row event-text-row" id="event-text-row" style="display: {{ 'flex' if scoreboard.event_text else 'none' }};">
+                <div class="scoreboard-event-text" id="event-text-display">{{ scoreboard.event_text or '' }}</div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        window.INITIAL_SCOREBOARD_STATE = {
+            race_title: {{ scoreboard.race_title|tojson }},
+            heat: {{ scoreboard.heat|tojson }},
+            event_text: {{ (scoreboard.event_text or '')|tojson }},
+            sort_mode: {{ (scoreboard.sort_mode or 'lane')|tojson }},
+            settings: {
+                background_color: {{ scoreboard.settings.background_color|tojson }},
+                font_color: {{ scoreboard.settings.font_color|tojson }},
+                font_scale: {{ (scoreboard.settings.font_scale or 100)|tojson }},
+            },
+            lanes: {{ scoreboard.lanes|tojson }},
+            timer: {{ scoreboard.timer|tojson }}
+        };
+    </script>
+    <script src="/static/scoreboard.js"></script>
+</body>
+</html>
