@@ -18,6 +18,9 @@
         elapsed_ms: 0,
     };
 
+    let clockOffsetMs = 0;
+    let clockOffsetHistory = [];
+
     function setConnectionLost(isLost) {
         if (timerDisplay) {
             timerDisplay.style.display = isLost ? "none" : "";
@@ -51,7 +54,7 @@
 
         let displayMs = baseElapsed;
         if (running && typeof startTs === "number") {
-            const now = Date.now();
+            const now = Date.now() + clockOffsetMs;
             displayMs = Math.max(0, now - startTs);
         }
 
@@ -194,6 +197,55 @@
     updateDayClock();
     setInterval(updateTimerDisplay, 100);
     setInterval(updateDayClock, 1000);
+
+    async function syncServerTime() {
+        try {
+            const clientSend = Date.now();
+            const response = await fetch("/api/time", {
+                method: "GET",
+                cache: "no-store",
+            });
+            const clientRecv = Date.now();
+            if (!response.ok) {
+                console.debug("Time sync failed", response.status);
+                return;
+            }
+            const data = await response.json();
+            const serverTime = Number(data.server_time_ms);
+            if (!Number.isFinite(serverTime)) {
+                console.debug("Time sync invalid payload", data);
+                return;
+            }
+            const rtt = clientRecv - clientSend;
+            const estimatedServerAtRecv = serverTime + rtt / 2;
+            const newOffset = estimatedServerAtRecv - clientRecv;
+
+            if (clockOffsetHistory.length === 0) {
+                clockOffsetHistory = [newOffset, newOffset, newOffset, newOffset, newOffset];
+            } else {
+                clockOffsetHistory.push(newOffset);
+                while (clockOffsetHistory.length > 5) {
+                    clockOffsetHistory.shift();
+                }
+            }
+
+            const sum = clockOffsetHistory.reduce((acc, val) => acc + val, 0);
+            clockOffsetMs = sum / clockOffsetHistory.length;
+            console.debug(
+                "Time sync",
+                JSON.stringify({
+                    rtt_ms: Math.round(rtt),
+                    new_offset_ms: Math.round(newOffset),
+                    offset_ms: Math.round(clockOffsetMs),
+                })
+            );
+        } catch (e) {
+            console.debug("Time sync error", e);
+        }
+    }
+
+    syncServerTime();
+    setInterval(syncServerTime, 60000);
 
     let socket = null;
     let reconnectTimer = null;

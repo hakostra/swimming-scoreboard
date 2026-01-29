@@ -196,8 +196,3 @@ button:hover {
 .status.error {
     color: #ef4444;
 }
-
-.control-section.note {
-    font-size: 0.9rem;
-    color: #9ca3af;
-}

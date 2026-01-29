@@ -45,11 +45,6 @@ window.addEventListener("DOMContentLoaded", () => {
     const firstLaneInput = document.getElementById("first-lane");
     const poolMetersInput = document.getElementById("pool-meters");
 
-    const timerStartBtn = document.getElementById("timer-start");
-    const timerStopBtn = document.getElementById("timer-stop");
-    const timerResetBtn = document.getElementById("timer-reset");
-    const timerStatus = document.getElementById("timer-status");
-
     const timingForm = document.getElementById("timing-form");
     const timingStatus = document.getElementById("timing-status");
 
@@ -145,42 +140,6 @@ window.addEventListener("DOMContentLoaded", () => {
             } catch (e) {
                 console.error(e);
                 setStatus(poolStatus, false, "Failed to update pool");
-            }
-        });
-    }
-
-    if (timerStartBtn) {
-        timerStartBtn.addEventListener("click", async () => {
-            try {
-                await postJson("/api/timer/start", {});
-                setStatus(timerStatus, true, "Timer started");
-            } catch (e) {
-                console.error(e);
-                setStatus(timerStatus, false, "Failed to start timer");
-            }
-        });
-    }
-
-    if (timerStopBtn) {
-        timerStopBtn.addEventListener("click", async () => {
-            try {
-                await postJson("/api/timer/stop", {});
-                setStatus(timerStatus, true, "Timer stopped");
-            } catch (e) {
-                console.error(e);
-                setStatus(timerStatus, false, "Failed to stop timer");
-            }
-        });
-    }
-
-    if (timerResetBtn) {
-        timerResetBtn.addEventListener("click", async () => {
-            try {
-                await postJson("/api/timer/reset", {});
-                setStatus(timerStatus, true, "Timer reset");
-            } catch (e) {
-                console.error(e);
-                setStatus(timerStatus, false, "Failed to reset timer");
             }
         });
     }
