@@ -491,6 +491,7 @@ async def root() -> RedirectResponse:
 @app.get("/scoreboard")
 async def scoreboard(request: Request):
     return templates.TemplateResponse(
+        request,
         "scoreboard.html",
         {
             "request": request,
@@ -502,6 +503,7 @@ async def scoreboard(request: Request):
 @app.get("/control")
 async def control_panel(request: Request):
     return templates.TemplateResponse(
+        request,
         "control_panel.html",
         {
             "request": request,
