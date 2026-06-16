@@ -38,6 +38,7 @@
 
         <section class="control-section">
             <h2>Pool Info</h2>
+            {% set first_lane_value = pool.first_lane if pool.first_lane is not none else 1 %}
             <form id="pool-form" onsubmit="return false;">
                 <div class="field">
                     <label for="lane-count">Number of lanes</label>
@@ -51,7 +52,7 @@
                     <label for="first-lane">First lane number</label>
                     <select id="first-lane" name="first_lane">
                         {% for n in range(0, 11) %}
-                        <option value="{{ n }}"{% if (pool.first_lane or 1) == n %} selected{% endif %}>{{ n }}</option>
+                        <option value="{{ n }}"{% if first_lane_value == n %} selected{% endif %}>{{ n }}</option>
                         {% endfor %}
                     </select>
                 </div>

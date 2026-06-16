@@ -33,8 +33,8 @@ else:
 @asynccontextmanager
 async def _lifespan(app: FastAPI):
     try:
-        first_lane = int(pool_config.get("first_lane", 1) or 1)
-        lane_count = int(pool_config.get("lane_count", 8) or 8)
+        first_lane = int(pool_config.get("first_lane", 1))
+        lane_count = int(pool_config.get("lane_count", 8))
     except Exception:
         first_lane = 1
         lane_count = 8
@@ -224,7 +224,7 @@ def _save_persistent_config() -> None:
 _load_persistent_config()
 
 
-def _compute_dist_from_laps(laps_raw: Any, settings: Dict[str, Any]) -> str:
+def _compute_dist_from_laps(laps_raw: Any, pool: Dict[str, Any]) -> str:
     """Compute distance string from a lap count and pool length.
 
     Returns an empty string if laps or pool length are invalid or non-positive.
@@ -238,7 +238,7 @@ def _compute_dist_from_laps(laps_raw: Any, settings: Dict[str, Any]) -> str:
     if laps <= 0:
         return ""
 
-    pool_len = settings.get("lap_meters", 50.0)
+    pool_len = pool.get("lap_meters", 50.0)
     try:
         pool_len = float(pool_len)
     except (TypeError, ValueError):
@@ -339,9 +339,8 @@ def _apply_lanes_payload(lanes_payload: list[Dict[str, Any]]) -> None:
     The payload is treated as authoritative; lanes not listed are cleared.
     """
 
-    settings = scoreboard_state.get("settings", {})
-    lane_count = int(settings.get("lane_count", 8) or 8)
-    first_lane = int(settings.get("first_lane", 1) or 1)
+    lane_count = int(pool_config.get("lane_count", 8))
+    first_lane = int(pool_config.get("first_lane", 1))
 
     lanes_by_no: Dict[int, Dict[str, Any]] = {}
     for idx in range(max(1, lane_count)):
@@ -380,7 +379,7 @@ def _apply_lanes_payload(lanes_payload: list[Dict[str, Any]]) -> None:
 
         if "lap" in lane:
             laps_raw = lane.get("lap")
-            current["dist"] = _compute_dist_from_laps(laps_raw, settings)
+            current["dist"] = _compute_dist_from_laps(laps_raw, pool_config)
         else:
             current["dist"] = ""
 
@@ -667,7 +666,6 @@ async def update_single_lane(payload: Dict[str, Any]):
         return {"status": "error", "message": "Invalid or missing lane"}
 
     lanes = scoreboard_state.get("lanes", [])
-    settings = scoreboard_state.get("settings", {})
     target = None
     for lane in lanes:
         if lane.get("lane") == lane_no:
@@ -687,7 +685,7 @@ async def update_single_lane(payload: Dict[str, Any]):
 
     if "lap" in payload:
         laps_raw = payload["lap"]
-        target["dist"] = _compute_dist_from_laps(laps_raw, settings)
+        target["dist"] = _compute_dist_from_laps(laps_raw, pool_config)
 
     if "finished" in payload:
         target["finished"] = _coerce_finished(payload["finished"])
