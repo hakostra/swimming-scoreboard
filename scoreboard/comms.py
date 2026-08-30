@@ -11,7 +11,7 @@ is responsible for talking to the external timing system
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import sys
@@ -95,8 +95,7 @@ class SerialDebugRecorder:
         if not payload or not self.enabled or self._fh is None:
             return
 
-        iso = datetime.datetime.fromtimestamp(ts, tz=datetime.timezone.utc) \
-            .isoformat()
+        iso = datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
         entry = {
             "ts": iso,
             "ts_epoch": ts,
